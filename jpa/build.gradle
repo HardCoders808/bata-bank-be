@@ -1,0 +1,8 @@
+dependencies {
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api 'org.springframework.boot:spring-boot-starter-session-jdbc'
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'org.javamoney:moneta:1.4.4'
+
+}
+

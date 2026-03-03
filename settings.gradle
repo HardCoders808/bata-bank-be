@@ -1,1 +1,19 @@
-rootProject.name = 'bata-bank-backend'
+rootProject.name = "bata-bank-backend"
+
+include(
+        "identity-access",
+        "customer-kyc",
+        "accounts",
+        "cards",
+        "payments",
+        "limits",
+        "child-family",
+        "loans",
+        "investments",
+        "communication",
+        "notifications",
+        "reporting",
+        "audit-monitoring",
+        "jpa",
+        "worker"
+)
