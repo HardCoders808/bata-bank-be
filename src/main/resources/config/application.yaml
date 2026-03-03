@@ -35,3 +35,9 @@ spring:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
+
+
+security:
+  jwt:
+    public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+    private-key-pem: ${JWT_PRIVATE_KEY_PEM:}

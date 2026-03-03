@@ -1,7 +1,5 @@
 package hardcoders808.bata.bank.backend.utils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
@@ -9,9 +7,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.stream.Collectors;
-
-import org.springframework.core.io.Resource;
 
 import lombok.experimental.UtilityClass;
 
@@ -22,47 +17,44 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public class KeyUtils {
-    public static byte[] readPem(final Resource resource) {
-        try (final var reader = new BufferedReader(
-                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
 
-            final var text = reader.lines().collect(Collectors.joining("\n"));
+    public static RSAPublicKey loadRsaPublicKeyFromPem(final String pem) {
+        try {
+            final var der = decodePem(pem,
+                    "-----BEGIN PUBLIC KEY-----",
+                    "-----END PUBLIC KEY-----");
 
-            final var base64 = text
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
-                    .replace("-----END PRIVATE KEY-----", "")
-                    .replace("-----BEGIN PUBLIC KEY-----", "")
-                    .replace("-----END PUBLIC KEY-----", "")
-                    .replaceAll("\\s", "");
-
-            return Base64.getDecoder().decode(base64);
-
+            final var spec = new X509EncodedKeySpec(der);
+            final var kf = KeyFactory.getInstance("RSA");
+            return (RSAPublicKey) kf.generatePublic(spec);
         } catch (final Exception e) {
-            throw new IllegalStateException("Failed to read PEM file", e);
+            throw new IllegalStateException("Failed to load RSA public key from PEM", e);
         }
     }
 
-    public static RSAPrivateKey loadRsaPrivateKey(final Resource resource) {
+    public static RSAPrivateKey loadRsaPrivateKeyFromPem(final String pem) {
         try {
-            final var keySpec = new PKCS8EncodedKeySpec(readPem(resource));
-            final var keyFactory = KeyFactory.getInstance("RSA");
+            final var der = decodePem(pem,
+                    "-----BEGIN PRIVATE KEY-----",
+                    "-----END PRIVATE KEY-----");
 
-            return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
-
+            final var spec = new PKCS8EncodedKeySpec(der);
+            final var kf = KeyFactory.getInstance("RSA");
+            return (RSAPrivateKey) kf.generatePrivate(spec);
         } catch (final Exception e) {
-            throw new IllegalStateException("Failed to load RSA private key", e);
+            throw new IllegalStateException("Failed to load RSA private key from PEM", e);
         }
     }
 
-    public static RSAPublicKey loadRsaPublicKey(final Resource resource) {
-        try {
-            final var keySpec = new X509EncodedKeySpec(readPem(resource));
-            final var keyFactory = KeyFactory.getInstance("RSA");
+    private static byte[] decodePem(final String pem,
+                                    final String beginMarker,
+                                    final String endMarker) {
 
-            return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+        final var base64 = pem
+                .replace(beginMarker, "")
+                .replace(endMarker, "")
+                .replaceAll("\\s", "");
 
-        } catch (final Exception e) {
-            throw new IllegalStateException("Failed to load RSA public key", e);
-        }
+        return Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
     }
 }
