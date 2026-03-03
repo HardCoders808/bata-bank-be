@@ -15,6 +15,7 @@ spring:
   config:
     import:
       - endpoint.yaml
+      - optional:file:.env[.properties]
 
   datasource:
     url: ""

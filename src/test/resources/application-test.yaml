@@ -6,7 +6,10 @@ server:
 spring:
   application:
     name: bata-bank-be
-
+  config:
+    import:
+      - endpoint.yaml
+      - optional:file:.env[.properties]
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MariaDB
     username: sa
@@ -30,3 +33,9 @@ spring:
   h2:
     console:
       enabled: false
+
+
+security:
+  jwt:
+    public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+    private-key-pem: ${JWT_PRIVATE_KEY_PEM:}

@@ -13,6 +13,9 @@ jobs:
   verify:
     name: Compile and Verify
     runs-on: bata-bank-runner-set
+    env:
+      JWT_PUBLIC_KEY_PEM: ${{ secrets.JWT_PUBLIC_KEY_PEM }}
+      JWT_PRIVATE_KEY_PEM: ${{ secrets.JWT_PRIVATE_KEY_PEM }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -44,6 +47,9 @@ jobs:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: bata-bank-runner-set
+    env:
+      JWT_PUBLIC_KEY_PEM: ${{ secrets.JWT_PUBLIC_KEY_PEM }}
+      JWT_PRIVATE_KEY_PEM: ${{ secrets.JWT_PRIVATE_KEY_PEM }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
