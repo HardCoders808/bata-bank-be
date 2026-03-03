@@ -1,36 +1,40 @@
 package hardcoders808.bata.bank.backend.resource;
 
-import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
-import hardcoders808.bata.bank.backend.service.UserService;
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-@Resource
-@RequestMapping("/users")
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
+import hardcoders808.bata.bank.backend.model.response.UserRegistrationResponseDTO;
+import hardcoders808.bata.bank.backend.service.UserService;
+
+@Slf4j
+@RestController
+@RequestMapping("${endpoint.api.user-resource}")
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserResource {
-
-    private static final Logger log = LoggerFactory.getLogger(UserResource.class);
 
     private final UserService userService;
 
-    public UserResource(UserService userService) {
-        this.userService = userService;
-    }
-
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void registerUser(@Valid @RequestBody UserRegistrationRequestDTO request) {
+    public ResponseEntity<UserRegistrationResponseDTO> registerUser(final @Valid @RequestBody UserRegistrationRequestDTO request) {
         log.info("Registration attempt for email: {}", request.email());
+        return userService.registerUser(request)
+                .map(user -> {
+                    log.info("User successfully registered: {}", request.email());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(user.asDto());
+                })
+                .orElseGet(() -> ResponseEntity.badRequest().build());
 
-        this.userService.registerUser(request);
 
-        log.info("User successfully registered: {}", request.email());
     }
 }

@@ -1,61 +1,51 @@
 package hardcoders808.bata.bank.backend.service;
 
-import hardcoders808.bata.bank.backend.jpa.domain.User;
-import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
-import hardcoders808.bata.bank.backend.model.response.UserRegistrationResponseDTO;
-import hardcoders808.bata.bank.backend.jpa.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Optional;
+
+import jakarta.validation.constraints.NotNull;
+
+import org.jspecify.annotations.NullMarked;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import hardcoders808.bata.bank.backend.jpa.domain.User;
+import hardcoders808.bata.bank.backend.jpa.repository.UserRepository;
+import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
+
+@Slf4j
 @Service
-public class UserService {
-
-    private final Logger log = LoggerFactory.getLogger(UserService.class);
-
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+
+    public Optional<User> registerUser(final @NotNull UserRegistrationRequestDTO request) {
+        final var rawPassword = request.password();
+        final var encodedPassword = passwordEncoder.encode(rawPassword);
+
+        final var existsByEmail = userRepository.existsByEmail(request.email());
+        if (existsByEmail) {
+            log.info("user with email [{}] already exists, terminating registering user", request.email());
+            return Optional.empty();
+        }
+
+        final var user = User.fromUserRegistrationRequestDTO(request, encodedPassword);
+        log.info("User Created: {}", user);
+        return Optional.of(userRepository.save(user));
     }
 
-    @Transactional
-    public UserRegistrationResponseDTO registerUser(UserRegistrationRequestDTO request) {
-
-        final String rawPassword = request.password();
-        final String encodedPassword = passwordEncoder.encode(rawPassword);
-
-        final User user = User.builder()
-                .email(request.email())
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .password(encodedPassword)
-                .role(request.userRole())
-                .dateOfBirth(request.dateOfBirth())
-                .idNumber(request.idNumber())
-                .birthNumber(request.birthNumber())
-                .address(request.address())
-                .build();
-
-        log.info("User Created: {}", user);
-
-        this.userRepository.save(user);
-
-        return new UserRegistrationResponseDTO(
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getRole(),
-                user.getDateOfBirth(),
-                user.getIdNumber(),
-                user.getBirthNumber(),
-                user.getAddress()
-        );
+    @Override
+    @NullMarked
+    public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
+        return userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("user with identification " + username + " does not exist"));
     }
 }

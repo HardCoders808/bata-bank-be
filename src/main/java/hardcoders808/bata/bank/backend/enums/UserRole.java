@@ -1,9 +1,14 @@
 package hardcoders808.bata.bank.backend.enums;
 
+import java.util.EnumSet;
+
+import org.springframework.security.core.GrantedAuthority;
+
+
 /**
  * Represents the role and permissions level of a user.
  */
-public enum UserRole {
+public enum UserRole implements GrantedAuthority {
 
     /**
      * System administrator with full access.
@@ -24,9 +29,45 @@ public enum UserRole {
      * Junior account holder with restricted account access.
      */
     JUNIOR_ACCOUNT_HOLDER,
+    ACCOUNT_HOLDER,
+    UNKNOWN;
 
-    /**
-     * Standard account holder.
-     */
-    ACCOUNT_HOLDER
+
+    private static final EnumSet<UserRole> CACHED_VALUES = EnumSet.allOf(UserRole.class);
+
+    public boolean isAdmin() {
+        return is(SYS_ADMIN);
+    }
+
+    public boolean isBanker() {
+        return is(BANKER);
+    }
+
+    public boolean isSenior() {
+        return is(SENIOR_ACCOUNT_HOLDER);
+    }
+
+    public boolean isJunior() {
+        return is(JUNIOR_ACCOUNT_HOLDER);
+    }
+
+    public boolean isAccountHolder() {
+        return is(ACCOUNT_HOLDER);
+    }
+
+    public boolean is(final UserRole role) {
+        return this == role;
+    }
+
+    public static UserRole fromString(final String name) {
+        return CACHED_VALUES.stream()
+                .filter(userRole -> userRole.name().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(UNKNOWN);
+    }
+
+    @Override
+    public String getAuthority() {
+        return this.name();
+    }
 }

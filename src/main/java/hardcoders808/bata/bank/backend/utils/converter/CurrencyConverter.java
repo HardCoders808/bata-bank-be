@@ -1,4 +1,4 @@
-package hardcoders808.bata.bank.backend.util.converter;
+package hardcoders808.bata.bank.backend.utils.converter;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

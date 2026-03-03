@@ -1,0 +1,44 @@
+server:
+  port: 0
+  servlet:
+    context-path: /v1
+
+spring:
+  application:
+    name: bata-bank-be-test
+
+  config:
+    import:
+      - endpoint.yaml
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+  h2:
+    console:
+      enabled: false
+
+security:
+  jwt:
+    public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+    private-key-pem: ${JWT_PRIVATE_KEY_PEM:}
+
+endpoint:
+  api:
+    base.path: "api"
+    user-resource: "/${endpoint.api.base.path}/v1/users"
+    auth-resource: "/${endpoint.api.base.path}/v1/auth"

@@ -1,23 +1,31 @@
 package hardcoders808.bata.bank.backend.jpa.domain;
 
-import hardcoders808.bata.bank.backend.enums.UserRole;
-import jakarta.persistence.*;
-import lombok.*;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.jspecify.annotations.NullMarked;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import lombok.*;
+
+import hardcoders808.bata.bank.backend.enums.UserRole;
+import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
+import hardcoders808.bata.bank.backend.model.response.UserRegistrationResponseDTO;
 
 @Entity
-@Table(name = "users")
 @Getter
 @Setter
+@Builder
+@Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,16 +67,42 @@ public class User {
     private LocalDateTime createdAt;
 
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("id", id)
-                .append("email", email)
-                .append("firstName", firstName)
-                .append("lastName", lastName)
-                .append("role", role)
-                .append("accountGroup", accountGroup)
-                .append("dateOfBirth", dateOfBirth)
-                .append("createdAt", createdAt)
-                .toString();
+    @NullMarked
+    public Collection<GrantedAuthority> getAuthorities() {
+        return List.of(role);
+    }
+
+    @Override
+    @NullMarked
+    public String getUsername() {
+        return email;
+    }
+
+
+    public UserRegistrationResponseDTO asDto() {
+        return new UserRegistrationResponseDTO(
+                email,
+                firstName,
+                lastName,
+                role,
+                dateOfBirth,
+                idNumber,
+                birthNumber,
+                address
+        );
+    }
+
+    public static User fromUserRegistrationRequestDTO(final UserRegistrationRequestDTO request, final String encodedPassword) {
+        return User.builder()
+                .email(request.email())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .password(encodedPassword)
+                .role(request.userRole())
+                .dateOfBirth(request.dateOfBirth())
+                .idNumber(request.idNumber())
+                .birthNumber(request.birthNumber())
+                .address(request.address())
+                .build();
     }
 }
