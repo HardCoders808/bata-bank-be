@@ -1,8 +1,8 @@
 package hardcoders808.bata.bank.backend.model.response;
 
-import hardcoders808.bata.bank.backend.enums.UserRole;
-
 import java.time.LocalDate;
+
+import hardcoders808.bata.bank.backend.enums.UserRole;
 
 public record UserRegistrationResponseDTO(
 
@@ -21,4 +21,5 @@ public record UserRegistrationResponseDTO(
         String birthNumber,
 
         String address
-) { }
+) {
+}

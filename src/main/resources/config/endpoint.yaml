@@ -1,0 +1,5 @@
+endpoint:
+  api:
+    base.path: "api"
+    user-resource: "/${endpoint.api.base.path}/v1/users"
+    auth-resource: "/${endpoint.api.base.path}/v1/auth"

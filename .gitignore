@@ -22,6 +22,7 @@ bin/
 *.iws
 *.iml
 *.ipr
+*.pem
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
@@ -37,4 +38,4 @@ out/
 .vscode/
 
 ### HIDE DEV PROPERTIES ###
-src/main/resources/config/application-dev.yaml
+application-dev.*

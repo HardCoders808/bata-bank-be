@@ -1,16 +1,19 @@
 package hardcoders808.bata.bank.backend.jpa.domain;
 
-import hardcoders808.bata.bank.backend.enums.TransactionStatus;
-import hardcoders808.bata.bank.backend.enums.TransactionType;
+import java.math.BigDecimal;
+import java.util.Map;
+
 import jakarta.persistence.*;
-import lombok.*;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import lombok.*;
+
+import hardcoders808.bata.bank.backend.enums.TransactionStatus;
+import hardcoders808.bata.bank.backend.enums.TransactionType;
 
 @Entity
 @Table(name = "transactions")
