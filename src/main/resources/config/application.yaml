@@ -1,5 +1,14 @@
+server:
+  port: 16290
+  servlet:
+    context-path: /v1
+
 spring:
   application:
     name: bata-bank-be
+  security:
+    user:
+      name: admin
+      password: admin
   profiles:
     active: dev
