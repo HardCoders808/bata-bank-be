@@ -1,3 +1,5 @@
 spring:
   application:
     name: bata-bank-be
+  profiles:
+    active: dev

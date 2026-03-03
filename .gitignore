@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### HIDE DEV PROPERTIES ###
+src/main/resources/config/application-dev.yaml
