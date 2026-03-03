@@ -36,13 +36,11 @@ jobs:
       - name: Build with Gradle (Compile Check)
         run: ./gradlew classes
 
-      - name: Debug env presence (no secret output)
-        run: |
-          echo "SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE"
-          echo "JWT_PUBLIC_KEY_PEM length=${#JWT_PUBLIC_KEY_PEM}"
-          echo "JWT_PRIVATE_KEY_PEM length=${#JWT_PRIVATE_KEY_PEM}"
-          
       - name: Run Tests
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          JWT_PUBLIC_KEY_PEM: ${{ secrets.JWT_PUBLIC_KEY_PEM }}
+          JWT_PRIVATE_KEY_PEM: ${{ secrets.JWT_PRIVATE_KEY_PEM }}
         run: ./gradlew test
 
   #######################################################################################################################
@@ -74,6 +72,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Package JAR
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          JWT_PUBLIC_KEY_PEM: ${{ secrets.JWT_PUBLIC_KEY_PEM }}
+          JWT_PRIVATE_KEY_PEM: ${{ secrets.JWT_PRIVATE_KEY_PEM }}
         run: ./gradlew bootJar -x test
 
       - name: Verify Docker (DinD Check)
