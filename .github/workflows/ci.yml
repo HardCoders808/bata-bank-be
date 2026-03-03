@@ -17,18 +17,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Fix Workspace Permissions
+        run: sudo chown -R $USER:$USER .
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'
+          cache: 'gradle' # Switched to gradle
 
-      - name: Build with Maven (Compile & Check)
-        run: ./mvnw clean compile
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle (Compile Check)
+        run: ./gradlew classes
 
       - name: Run Tests
-        run: ./mvnw test
+        run: ./gradlew test
 
   #######################################################################################################################
   # JOB 2: Package and Containerize (Only runs after merge to master)
@@ -42,15 +48,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Fix Workspace Permissions
+        run: sudo chown -R $USER:$USER .
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'
+          cache: 'gradle'
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
 
       - name: Package JAR
-        run: ./mvnw package -DskipTests
+        run: ./gradlew bootJar -x test
 
       - name: Verify Docker (DinD Check)
         run: docker ps
@@ -64,4 +76,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bata-bank-backend-jar
-          path: target/*.jar
+          path: build/libs/*.jar
