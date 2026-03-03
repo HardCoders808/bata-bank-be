@@ -8,7 +8,7 @@ package hardcoders808.bata.bank.backend.security;
 public class SecurityConstants {
     public final static long REFRESH_TTL_DAYS = 14L;
 
-    public final static long TOKEN_VALID_FOR_SECONDS = 1 * 60L;
+    public final static long TOKEN_VALID_FOR_SECONDS = 1 * 15L;
 
     public final static String REFRESH_TOKEN = "refresh_token";
 

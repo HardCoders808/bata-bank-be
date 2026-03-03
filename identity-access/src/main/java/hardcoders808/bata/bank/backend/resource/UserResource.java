@@ -1,14 +1,18 @@
 package hardcoders808.bata.bank.backend.resource;
 
+import hardcoders808.bata.bank.backend.enums.UserRole;
+import hardcoders808.bata.bank.backend.model.request.JuniorUserRegistrationRequestDTO;
+import hardcoders808.bata.bank.backend.model.response.UserDisplayDTO;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,24 @@ public class UserResource {
 
     private final UserService userService;
 
+    @GetMapping
+    public ResponseEntity<Page<UserDisplayDTO>> getUsers(Pageable pageable, @AuthenticationPrincipal Jwt jwt) {
+        final UserRole role = extractRole(jwt);
+        log.info("JWT Subject: {} with role: {} is fetching users", jwt.getSubject(), role);
+        return ResponseEntity.ok(userService.getUsersForRole(role, pageable));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDisplayDTO> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        log.info("Fetching profile for user: {}", email);
+
+        return userService.findByEmail(email)
+                .map(UserDisplayDTO::fromDomain)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
     @PostMapping("/register")
     public ResponseEntity<UserRegistrationResponseDTO> registerUser(final @Valid @RequestBody UserRegistrationRequestDTO request) {
         log.info("Registration attempt for email: {}", request.email());
@@ -35,7 +57,24 @@ public class UserResource {
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
                 })
                 .orElseGet(() -> ResponseEntity.badRequest().build());
+    }
 
+    @PostMapping("/register-junior")
+    public ResponseEntity<UserRegistrationResponseDTO> registerJuniorAccountHolder(final @Valid @RequestBody JuniorUserRegistrationRequestDTO request) {
+        log.info("Junior Account Holder registration attempt for email: {}", request.email());
+        return userService.registerJuniorAccount(request)
+                .map(user -> {
+                    log.info("Junior Account Holder successfully registered: {}", request.email());
+                    final var response = UserRegistrationResponseDTO.fromDomain(user);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                })
+                .orElseGet(() -> ResponseEntity.badRequest().build());
+    }
 
+    private UserRole extractRole(Jwt jwt) {
+        return jwt.getClaimAsStringList("roles").stream()
+                .map(UserRole::fromString)
+                .findFirst()
+                .orElse(UserRole.UNKNOWN);
     }
 }

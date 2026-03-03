@@ -1,17 +1,18 @@
 package hardcoders808.bata.bank.backend.model.request;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
+import hardcoders808.bata.bank.backend.enums.UserRole;
+import hardcoders808.bata.bank.backend.jpa.domain.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import hardcoders808.bata.bank.backend.enums.UserRole;
-import hardcoders808.bata.bank.backend.jpa.domain.User;
+import java.time.LocalDate;
 
-public record UserRegistrationRequestDTO(
+public record JuniorUserRegistrationRequestDTO(
+        @NotBlank @Email String parentEmail,
+        @NotBlank String accountGroup,
+
         @NotBlank @Email String email,
         @NotBlank String firstName,
         @NotBlank String lastName,
@@ -27,10 +28,9 @@ public record UserRegistrationRequestDTO(
                 .email(email())
                 .firstName(firstName())
                 .lastName(lastName())
-                .accountGroup("DEFAULT")//todo fill this
                 .password(encodedPassword)
                 .role(userRole())
-                .accountGroup(UUID.randomUUID().toString())
+                .accountGroup(accountGroup())
                 .dateOfBirth(dateOfBirth())
                 .idNumber(idNumber())
                 .birthNumber(birthNumber())
@@ -38,3 +38,4 @@ public record UserRegistrationRequestDTO(
                 .build();
     }
 }
+
