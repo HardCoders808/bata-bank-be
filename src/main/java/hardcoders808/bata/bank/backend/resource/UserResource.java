@@ -1,7 +1,7 @@
-package hardcoders808.backend.resource;
+package hardcoders808.bata.bank.backend.resource;
 
-import hardcoders808.backend.model.request.UserRegistrationRequestDTO;
-import hardcoders808.backend.service.UserService;
+import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
+import hardcoders808.bata.bank.backend.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

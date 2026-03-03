@@ -1,4 +1,4 @@
-package hardcoders808.backend;
+package hardcoders808.bata.bank.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

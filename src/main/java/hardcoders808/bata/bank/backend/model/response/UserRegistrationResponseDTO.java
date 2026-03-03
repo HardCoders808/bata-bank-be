@@ -1,6 +1,6 @@
-package hardcoders808.backend.model.response;
+package hardcoders808.bata.bank.backend.model.response;
 
-import hardcoders808.backend.enums.UserRole;
+import hardcoders808.bata.bank.backend.enums.UserRole;
 
 import java.time.LocalDate;
 

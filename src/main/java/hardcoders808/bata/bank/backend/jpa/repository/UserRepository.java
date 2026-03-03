@@ -1,6 +1,6 @@
-package hardcoders808.backend.repository;
+package hardcoders808.bata.bank.backend.jpa.repository;
 
-import hardcoders808.backend.domain.User;
+import hardcoders808.bata.bank.backend.jpa.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

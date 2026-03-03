@@ -1,9 +1,9 @@
-package hardcoders808.backend.service;
+package hardcoders808.bata.bank.backend.service;
 
-import hardcoders808.backend.domain.User;
-import hardcoders808.backend.model.request.UserRegistrationRequestDTO;
-import hardcoders808.backend.model.response.UserRegistrationResponseDTO;
-import hardcoders808.backend.repository.UserRepository;
+import hardcoders808.bata.bank.backend.jpa.domain.User;
+import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
+import hardcoders808.bata.bank.backend.model.response.UserRegistrationResponseDTO;
+import hardcoders808.bata.bank.backend.jpa.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

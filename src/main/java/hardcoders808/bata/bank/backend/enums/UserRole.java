@@ -1,4 +1,4 @@
-package hardcoders808.backend.enums;
+package hardcoders808.bata.bank.backend.enums;
 
 public enum UserRole {
 

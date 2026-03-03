@@ -1,6 +1,6 @@
-package hardcoders808.backend.model.request;
+package hardcoders808.bata.bank.backend.model.request;
 
-import hardcoders808.backend.enums.UserRole;
+import hardcoders808.bata.bank.backend.enums.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

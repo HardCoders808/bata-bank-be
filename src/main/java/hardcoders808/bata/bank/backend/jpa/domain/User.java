@@ -1,6 +1,6 @@
-package hardcoders808.backend.domain;
+package hardcoders808.bata.bank.backend.jpa.domain;
 
-import hardcoders808.backend.enums.UserRole;
+import hardcoders808.bata.bank.backend.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;

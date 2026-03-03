@@ -1,4 +1,4 @@
-package hardcoders808.backend.security.config;
+package hardcoders808.bata.bank.backend.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
