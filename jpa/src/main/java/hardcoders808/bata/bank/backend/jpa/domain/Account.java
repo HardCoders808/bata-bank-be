@@ -17,12 +17,13 @@ import hardcoders808.bata.bank.backend.enums.AccountStatus;
 import hardcoders808.bata.bank.backend.enums.AccountType;
 
 @Entity
-@Table(name = "accounts")
 @Getter
 @Setter
+@Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Table(name = "accounts")
 public class Account {
 
     @Id

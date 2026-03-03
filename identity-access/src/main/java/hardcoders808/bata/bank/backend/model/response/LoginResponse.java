@@ -8,5 +8,15 @@ import jakarta.validation.constraints.NotNull;
  * @project bata-bank-backend
  * @date 03.03.2026 15:11
  */
-public record LoginResponse(@NotBlank @NotNull String token, long expiresIn) {
+public record LoginResponse(@NotBlank @NotNull String token,
+                            Long expiresIn,
+                            boolean mfaRequired,
+                            String challengeId) {
+    public static LoginResponse token(final String token, final long ttl) {
+        return new LoginResponse(token, ttl, false, null);
+    }
+
+    public static LoginResponse mfaRequired(final String challengeId) {
+        return new LoginResponse(null, null, true, challengeId);
+    }
 }

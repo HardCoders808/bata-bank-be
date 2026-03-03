@@ -1,7 +1,7 @@
 server:
   port: 16290
   servlet:
-    context-path: /v1
+    context-path: /api/v1
 
 spring:
   application:
@@ -39,6 +39,8 @@ spring:
 
 
 security:
+  crypto:
+    mfa-key-base64: ${MFA_SECRET_KEY_BASE64}
   jwt:
     public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
     private-key-pem: ${JWT_PRIVATE_KEY_PEM:}

@@ -48,13 +48,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable for stateless REST APIs
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/v1/error",
                                 "/error",
-                                "/api/v1/users/authenticate",
-                                "/api/v1/auth/authenticate",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/refresh",
-                                "/api/v1/auth/logout",
+                                "/users/authenticate",
+                                "/auth/authenticate",
+                                "/auth/login",
+                                "/auth/refresh",
+                                "/auth/logout",
                                 "/public/**")
                         .permitAll()
                         .anyRequest()

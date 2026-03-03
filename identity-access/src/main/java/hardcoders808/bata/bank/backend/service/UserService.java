@@ -3,6 +3,7 @@ package hardcoders808.bata.bank.backend.service;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 
 import org.jspecify.annotations.NonNull;
@@ -28,8 +29,9 @@ import hardcoders808.bata.bank.backend.model.request.UserRegistrationRequestDTO;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MfaService mfaService;
 
-
+    @Transactional
     public Optional<User> registerUser(final @NotNull UserRegistrationRequestDTO request) {
         final var rawPassword = request.password();
         final var encodedPassword = passwordEncoder.encode(rawPassword);
@@ -43,7 +45,8 @@ public class UserService implements UserDetailsService {
 
         final var user = request.toDomain(encodedPassword);
         log.info("User Created: {}", user);
-        return Optional.of(userRepository.save(user));
+        final var saved = userRepository.save(user);
+        return Optional.of(saved);
     }
 
     @Override
@@ -61,5 +64,17 @@ public class UserService implements UserDetailsService {
                 user.getPassword(),
                 List.of(authority)
         );
+    }
+
+    public Optional<User> findByEmail(final String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public Optional<User> findById(final Long userId) {
+        return userRepository.findById(userId);
+    }
+
+    public void save(User user) {
+        userRepository.save(user);
     }
 }

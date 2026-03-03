@@ -2,6 +2,7 @@ package hardcoders808.bata.bank.backend.jpa.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import jakarta.persistence.*;
 
@@ -16,6 +17,7 @@ import hardcoders808.bata.bank.backend.enums.UserRole;
 @Getter
 @Setter
 @Builder
+@ToString
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,7 +40,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private UserRole role;
 
     @Column(name = "account_group", nullable = false, length = 50)
@@ -60,10 +62,20 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @ToString.Exclude
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserMfa userMfa;
+
+    public Boolean isMfaEnabled() {
+        if (Objects.isNull(userMfa)) {
+            return false;
+        }
+        return Boolean.TRUE.equals(userMfa.getEnabled());
+    }
+
 
     @NullMarked
     public String getUsername() {
         return email;
     }
-
 }

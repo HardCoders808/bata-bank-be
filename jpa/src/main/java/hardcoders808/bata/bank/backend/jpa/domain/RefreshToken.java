@@ -20,6 +20,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+@ToString
 @Table(name = "refresh_token")
 @NoArgsConstructor
 @AllArgsConstructor

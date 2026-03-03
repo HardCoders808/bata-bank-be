@@ -38,7 +38,7 @@ public class UnauthorizedEntryPoint implements AuthenticationEntryPoint {
     public void commence(final @NonNull HttpServletRequest request,
                          final @NonNull HttpServletResponse response,
                          final @NonNull AuthenticationException authException) throws IOException, ServletException {
-        log.error("Unauthorized request from [{}]", request.getRequestURI(), authException);
+        log.error("Unauthorized request from [{}]", request.getRequestURL().toString(), authException);
 
         final var status = HttpServletResponse.SC_UNAUTHORIZED;
 

@@ -4,5 +4,6 @@ dependencies {
     api "org.springframework.security:spring-security-oauth2-jose"
     api "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
 
+    implementation("com.warrenstrange:googleauth:1.5.0")
 }
 

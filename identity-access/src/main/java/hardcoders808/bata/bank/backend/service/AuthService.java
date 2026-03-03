@@ -1,7 +1,6 @@
 package hardcoders808.bata.bank.backend.service;
 
-import static hardcoders808.bata.bank.backend.security.SecurityConstants.DEVICE_ID;
-import static hardcoders808.bata.bank.backend.security.SecurityConstants.TOKEN_VALID_FOR_SECONDS;
+import static hardcoders808.bata.bank.backend.security.SecurityConstants.*;
 import static org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames.REFRESH_TOKEN;
 
 import java.nio.charset.StandardCharsets;
@@ -10,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.servlet.http.Cookie;
@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import hardcoders808.bata.bank.backend.jpa.domain.RefreshToken;
 import hardcoders808.bata.bank.backend.jpa.repository.RefreshTokenRepository;
 import hardcoders808.bata.bank.backend.model.request.LoginRequest;
+import hardcoders808.bata.bank.backend.model.request.MfaVerifyRequest;
 import hardcoders808.bata.bank.backend.model.response.LoginResponse;
 
 /**
@@ -50,9 +51,59 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserService userService;
+    private final MfaService mfaService;
 
-    private final long refreshTtlDays = 14L;
 
+    public LoginResponse verifyMfaAndIssueTokens(final MfaVerifyRequest request,
+                                                 final HttpServletRequest httpRequest,
+                                                 final HttpServletResponse httpResponse) {
+
+        mfaService.verifyLoginChallenge(request.challengeId(), request.code());
+
+        final var challenge = mfaService.findById(request.challengeId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid challenge"));
+
+        final var user = userService.findById(challenge.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+        if (!Boolean.TRUE.equals(user.isMfaEnabled())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "MFA not enabled");
+        }
+
+        final var now = LocalDateTime.now();
+
+        var deviceId = getCookieValue(httpRequest, DEVICE_ID);
+        if (deviceId == null || deviceId.isBlank()) {
+            deviceId = UUID.randomUUID().toString();
+        }
+
+        final var refreshRaw = createRefreshRaw();
+        final var refreshHash = sha256Base64Url(refreshRaw);
+
+        final var refreshDoc = RefreshToken.of(
+                user.getEmail(),
+                deviceId,
+                refreshHash,
+                now.plusDays(REFRESH_TTL_DAYS)
+        );
+        refreshTokenRepository.save(refreshDoc);
+
+
+        final var claims = JwtClaimsSet.builder()
+                .subject(user.getEmail())
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(TOKEN_VALID_FOR_SECONDS))
+                .claim("roles", List.of(user.getRole().name()))
+                .build();
+
+        final var accessToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
+        setHttpOnlyCookie(httpResponse, REFRESH_TOKEN, refreshRaw, Duration.ofDays(REFRESH_TTL_DAYS));
+        setHttpOnlyCookie(httpResponse, DEVICE_ID, deviceId, Duration.ofDays(REFRESH_TTL_DAYS));
+
+        return LoginResponse.token(accessToken, TOKEN_VALID_FOR_SECONDS);
+    }
 
     public LoginResponse authenticate(final @NotNull LoginRequest request, final @NotNull HttpServletResponse response) {
         log.info("logging in user {}", request);
@@ -60,7 +111,14 @@ public class AuthService {
         final var auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
+        final var user = userService.findByEmail(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 
+        if (Boolean.TRUE.equals(user.isMfaEnabled())) {
+            final var challengeId = mfaService.createLoginChallenge(user.getId());
+            setHttpOnlyCookie(response, DEVICE_ID, UUID.randomUUID().toString(), Duration.ofDays(REFRESH_TTL_DAYS));
+            return LoginResponse.mfaRequired(challengeId);
+        }
         final var now = LocalDateTime.now();
         final var userId = auth.getName();
 
@@ -72,7 +130,7 @@ public class AuthService {
                 userId,
                 deviceId,
                 refreshHash,
-                now.plusDays(refreshTtlDays)
+                now.plusDays(REFRESH_TTL_DAYS)
         );
         refreshTokenRepository.save(refreshDoc);
 
@@ -89,10 +147,10 @@ public class AuthService {
 
         final var accessToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
-        setHttpOnlyCookie(response, REFRESH_TOKEN, refreshRaw, Duration.ofDays(refreshTtlDays));
-        setHttpOnlyCookie(response, DEVICE_ID, deviceId, Duration.ofDays(refreshTtlDays));
+        setHttpOnlyCookie(response, REFRESH_TOKEN, refreshRaw, Duration.ofDays(REFRESH_TTL_DAYS));
+        setHttpOnlyCookie(response, DEVICE_ID, deviceId, Duration.ofDays(REFRESH_TTL_DAYS));
 
-        return new LoginResponse(accessToken, TOKEN_VALID_FOR_SECONDS);
+        return LoginResponse.token(accessToken, TOKEN_VALID_FOR_SECONDS);
     }
 
     public LoginResponse refreshToken(final HttpServletRequest request, final HttpServletResponse response) {
@@ -131,7 +189,7 @@ public class AuthService {
                 existing.getUserId(),
                 existing.getDeviceId(),
                 newHash,
-                now.plusDays(refreshTtlDays)
+                now.plusDays(REFRESH_TTL_DAYS)
         );
 
         refreshTokenRepository.save(existing);
@@ -145,10 +203,10 @@ public class AuthService {
 
         final var accessToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
-        setHttpOnlyCookie(response, REFRESH_TOKEN, newRefreshRaw, Duration.ofDays(refreshTtlDays));
-        setHttpOnlyCookie(response, DEVICE_ID, deviceId, Duration.ofDays(refreshTtlDays));
+        setHttpOnlyCookie(response, REFRESH_TOKEN, newRefreshRaw, Duration.ofDays(REFRESH_TTL_DAYS));
+        setHttpOnlyCookie(response, DEVICE_ID, deviceId, Duration.ofDays(REFRESH_TTL_DAYS));
 
-        return new LoginResponse(accessToken, TOKEN_VALID_FOR_SECONDS);
+        return LoginResponse.token(accessToken, TOKEN_VALID_FOR_SECONDS);
     }
 
     public void logout(final HttpServletRequest request, final HttpServletResponse response) {
@@ -173,7 +231,7 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Strict")
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(Duration.ZERO)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -184,7 +242,7 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Strict")
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(maxAge)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
