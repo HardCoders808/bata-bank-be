@@ -3,3 +3,4 @@ endpoint:
     user-resource: "/users"
     auth-resource: "/auth"
     mfa-resource: "/mfa"
+    account-resource: "/accounts"
