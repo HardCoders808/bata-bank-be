@@ -28,8 +28,12 @@ public class Transaction {
     private TransactionPk id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "source_card_id", nullable = false)
+    @JoinColumn(name = "source_card_id", nullable = true)
     private Card sourceCard;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_account_id", nullable = true)
+    private Account sourceAccount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_account_id")
