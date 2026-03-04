@@ -1,6 +1,7 @@
 package hardcoders808.bata.bank.backend.model.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author HAMMA FATAKA (mfataka@monetplus.cz)
@@ -9,6 +10,5 @@ import jakarta.validation.constraints.NotBlank;
  */
 public record MfaVerifyRequest(
         @NotBlank String challengeId,
-        @NotBlank Integer code
-) {
-}
+        @NotNull  Integer code
+) { }

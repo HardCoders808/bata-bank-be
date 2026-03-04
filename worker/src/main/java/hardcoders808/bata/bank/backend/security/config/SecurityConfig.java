@@ -52,6 +52,7 @@ public class SecurityConfig {
                                 "/users/authenticate",
                                 "/auth/authenticate",
                                 "/auth/login",
+                                "/auth/verify-login",
                                 "/auth/refresh",
                                 "/auth/logout",
                                 "/public/**")

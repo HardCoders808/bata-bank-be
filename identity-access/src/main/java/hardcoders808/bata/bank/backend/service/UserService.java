@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import hardcoders808.bata.bank.backend.enums.UserRole;
+import hardcoders808.bata.bank.backend.model.request.UpdateUserDTO;
 import hardcoders808.bata.bank.backend.model.response.UserDisplayDTO;
 import jakarta.transaction.Transactional;
 import hardcoders808.bata.bank.backend.model.request.JuniorUserRegistrationRequestDTO;
@@ -73,6 +74,21 @@ public class UserService implements UserDetailsService {
         return Optional.of(userRepository.save(user));
     }
 
+    @Transactional
+    public boolean updateUser(final @NotNull Long userId, final @NotNull UpdateUserDTO request) {
+        return userRepository.findById(userId)
+                .map(user -> {
+                    request.updateEntity(user);
+                    this.userRepository.save(user);
+
+                    log.info("User with ID [{}] and email [{}] successfully updated", userId, user.getEmail());
+                    return true;
+                })
+                .orElseGet(() -> {
+                    log.warn("Update failed: User with ID [{}] not found", userId);
+                    return false;
+                });
+    }
 
     @Transactional
     public Optional<User> registerUser(final @NotNull UserRegistrationRequestDTO request) {

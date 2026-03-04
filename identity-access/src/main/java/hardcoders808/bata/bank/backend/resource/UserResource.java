@@ -2,6 +2,7 @@ package hardcoders808.bata.bank.backend.resource;
 
 import hardcoders808.bata.bank.backend.enums.UserRole;
 import hardcoders808.bata.bank.backend.model.request.JuniorUserRegistrationRequestDTO;
+import hardcoders808.bata.bank.backend.model.request.UpdateUserDTO;
 import hardcoders808.bata.bank.backend.model.response.UserDisplayDTO;
 import jakarta.validation.Valid;
 
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -29,11 +31,31 @@ public class UserResource {
 
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping("/list")
+    @PreAuthorize("hasAnyRole('SYS_ADMIN', 'BANKER')")
     public ResponseEntity<Page<UserDisplayDTO>> getUsers(Pageable pageable, @AuthenticationPrincipal Jwt jwt) {
         final UserRole role = extractRole(jwt);
         log.info("JWT Subject: {} with role: {} is fetching users", jwt.getSubject(), role);
         return ResponseEntity.ok(userService.getUsersForRole(role, pageable));
+    }
+
+    @PutMapping("/update/{userId}")
+    @PreAuthorize("hasAnyRole('SYS_ADMIN', 'BANKER')")
+    public ResponseEntity<Void> updateUser(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateUserDTO request) {
+
+        log.info("Update attempt for User ID: [{}]", userId);
+
+        boolean isSuccess = userService.updateUser(userId, request);
+
+        if (isSuccess) {
+            log.info("User successfully updated: {}", request.email());
+            return ResponseEntity.ok().build();
+        } else {
+            log.warn("Update failed: User ID [{}] not found", userId);
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/me")
@@ -48,6 +70,7 @@ public class UserResource {
     }
 
     @PostMapping("/register")
+    @PreAuthorize("hasAnyRole('SYS_ADMIN', 'BANKER')")
     public ResponseEntity<UserRegistrationResponseDTO> registerUser(final @Valid @RequestBody UserRegistrationRequestDTO request) {
         log.info("Registration attempt for email: {}", request.email());
         return userService.registerUser(request)
@@ -60,6 +83,7 @@ public class UserResource {
     }
 
     @PostMapping("/register-junior")
+    @PreAuthorize("hasAnyRole('SYS_ADMIN', 'BANKER')")
     public ResponseEntity<UserRegistrationResponseDTO> registerJuniorAccountHolder(final @Valid @RequestBody JuniorUserRegistrationRequestDTO request) {
         log.info("Junior Account Holder registration attempt for email: {}", request.email());
         return userService.registerJuniorAccount(request)
