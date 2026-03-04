@@ -39,21 +39,21 @@ public class UserResource {
         return ResponseEntity.ok(userService.getUsersForRole(role, pageable));
     }
 
-    @PutMapping("/update/{userId}")
+    @PutMapping("/update/{id}")
     @PreAuthorize("hasAnyRole('SYS_ADMIN', 'BANKER')")
     public ResponseEntity<Void> updateUser(
-            @PathVariable Long userId,
+            @PathVariable("id") Long id,
             @Valid @RequestBody UpdateUserDTO request) {
 
-        log.info("Update attempt for User ID: [{}]", userId);
+        log.info("Update attempt for User ID: [{}]", id);
 
-        boolean isSuccess = userService.updateUser(userId, request);
+        boolean isSuccess = userService.updateUser(id, request);
 
         if (isSuccess) {
             log.info("User successfully updated: {}", request.email());
             return ResponseEntity.ok().build();
         } else {
-            log.warn("Update failed: User ID [{}] not found", userId);
+            log.warn("Update failed: User ID [{}] not found", id);
             return ResponseEntity.notFound().build();
         }
     }

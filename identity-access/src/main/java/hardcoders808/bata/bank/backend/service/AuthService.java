@@ -179,6 +179,11 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
+        final var user = userService.findByEmail(existing.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+        final var roles = List.of("ROLE_" + user.getRole().name());
+
         final var newRefreshRaw = createRefreshRaw();
         final var newHash = sha256Base64Url(newRefreshRaw);
 
@@ -199,6 +204,7 @@ public class AuthService {
                 .subject(existing.getUserId())
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plusSeconds(TOKEN_VALID_FOR_SECONDS))
+                .claim("roles", roles) // Added the missing roles claim
                 .build();
 
         final var accessToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
