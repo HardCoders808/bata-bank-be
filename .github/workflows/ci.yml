@@ -13,6 +13,7 @@ jobs:
   verify:
     name: Compile and Verify
     runs-on: bata-bank-runner-set
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.actor == 'your-username'
     env:
       JWT_PUBLIC_KEY_PEM: ${{ secrets.JWT_PUBLIC_KEY_PEM }}
       JWT_PRIVATE_KEY_PEM: ${{ secrets.JWT_PRIVATE_KEY_PEM }}
